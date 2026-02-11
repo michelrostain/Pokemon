@@ -1,5 +1,6 @@
 from mainclass import *
-
+import random
+import pygame
 
 class menu:
     def __init__(self):
@@ -7,6 +8,7 @@ class menu:
 
         # Se déclenche au démarrage du jeu, ajout Pokemon pour l'ordinateur
     def afficher_menu(self):
+        pass
 
     def ajouter_pokemon(self):
         for p in liste_brute:
