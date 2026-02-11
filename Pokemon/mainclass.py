@@ -40,7 +40,7 @@ class Pokemon:
 
     def statistiques(self):
         print(
-            f"{poke.nom} (Vie : {poke.pv}, Attaque: {poke.attaque}, Defense: {poke.defense}, Type: {poke.type_principal}, Vitesse: {poke.vitesse}) -> Évolution: {poke.evolution}"
+            f"{self.nom} (Vie : {self.pv}, Attaque: {self.attaque}, Defense: {self.defense}, Type: {self.type_principal}, Vitesse: {self.vitesse}) -> Évolution: {self.evolution}"
         )
 
     def faire_evoluer(self):
