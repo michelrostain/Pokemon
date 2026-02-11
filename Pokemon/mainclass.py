@@ -12,7 +12,7 @@ with open(chemin_types, "r", encoding="utf-8") as f:
 # 3. Création de tes objets
 mes_pokemons = []
 
-pygame.init
+pygame.init()
 
 
 class Pokemon:
