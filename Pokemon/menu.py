@@ -18,7 +18,7 @@ class Menu:
     def ajouter_pokemon(self):
         nb_total = len(liste_brute)
         for i, p in enumerate(liste_brute):
-            # --- PETIT ÉCRAN DE CHARGEMENT ---
+            # --- ÉCRAN DE CHARGEMENT ---
             self.screen.fill((0, 0, 0)) # Fond noir
             texte_load = self.font.render(f"Chargement des Pokemons... {i}/{nb_total}", True, (255, 255, 255))
             self.screen.blit(texte_load, (250, 280))
