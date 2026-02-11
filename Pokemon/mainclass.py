@@ -1,6 +1,5 @@
 import json
 import pygame
-import random
 
 chemin = "pokemon.json"
 with open(chemin, "r", encoding="utf-8") as f:
@@ -17,7 +16,7 @@ pygame.init
 
 
 class Pokemon:
-    def __init__(self, nom, pv, attaque, defense, image_url, type_principal, vitesse):
+    def __init__(self, nom, pv, attaque, defense, vitesse, image_url, type_principal, evolution_nom):
         self.nom = nom
         self.pv = pv
         self.attaque = attaque
@@ -25,7 +24,8 @@ class Pokemon:
         self.vitesse = vitesse
         self.image_url = image_url
         self.type_principal = type_principal
-        self.evolution = 0
+        self.evolution_nom = evolution_nom
+        self.point_exp=0
         self.ko = False
 
     def est_en_vie(self):
@@ -42,3 +42,19 @@ class Pokemon:
         print(
             f"{poke.nom} (Vie : {poke.pv}, Attaque: {poke.attaque}, Defense: {poke.defense}, Type: {poke.type_principal}, Vitesse: {poke.vitesse}) -> Évolution: {poke.evolution}"
         )
+
+    def faire_evoluer(self):
+    # On vérifie si une évolution est possible
+        if self.evolution_nom is not None:
+            # On cherche dans la liste globale le Pokémon qui porte ce nom
+            for p in mes_pokemons:
+                if p.nom == self.evolution_nom:
+                    # On remplace les stats actuelles par celles de l'évolution
+                    self.nom = p.nom
+                    self.pv = p.pv
+                    self.attaque = p.attaque
+                    self.defense = p.defense
+                    self.type_principal = p.type_principal
+                    self.evolution_nom = p.evolution_nom # On récupère le nom de la PROCHAINE évolution
+                    print(f"Incroyable ! Votre Pokémon a évolué en {self.nom} !")
+                    break
