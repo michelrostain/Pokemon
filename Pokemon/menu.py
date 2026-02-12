@@ -1,4 +1,5 @@
 from mainclass import *
+from combat import combat
 
 
 class menu:
@@ -6,22 +7,22 @@ class menu:
         pass
 
         # Se déclenche au démarrage du jeu, ajout Pokemon pour l'ordinateur
-    def afficher_menu(self):
+        # def afficher_menu(self):
 
-    def ajouter_pokemon(self):
-        for p in liste_brute:
-            nouveau_p = Pokemon(
-                p["name"],
-                p["stats"]["HP"],
-                p["stats"]["attack"],
-                p["stats"]["defense"],
-                p["stats"]["speed"],
-                p["image"],
-                p["apiTypes"][0]["name"],
-            )
-            mes_pokemons.append(nouveau_p)
+        def ajouter_pokemon(self):
+            for p in liste_brute:
+                nouveau_p = Pokemon(
+                    p["name"],
+                    p["stats"]["HP"],
+                    p["stats"]["attack"],
+                    p["stats"]["defense"],
+                    p["stats"]["speed"],
+                    p["image"],
+                    p["apiTypes"][0]["name"],
+                )
+                mes_pokemons.append(nouveau_p)
 
-    def ajouter_utilisateur(self):#selectionnner pokemon
+    def ajouter_utilisateur(self):  # selectionnner pokemon
         self.nom = str(input("Choisissez votre nom : "))
 
         # Choix random dans la liste des 151 pokemons, il y en a 3 de choisis
