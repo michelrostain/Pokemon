@@ -1,3 +1,9 @@
-from mainclass import menu
+from mainclass import *
+from menu import Menu
+from combat import combat
+import pygame
 
-menu.ajouter_pokemon()
+
+def lancer_jeu():
+    # 1. Initialisation du Menu et de Pygame
+    mon_menu = Menu()
