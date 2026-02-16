@@ -1,1 +1,27 @@
-[]
+[
+    {
+        "nom": "Canarticho",
+        "types": [
+            "Normal",
+            "Vol"
+        ],
+        "pv": 52,
+        "attaque": 90,
+        "defense": 55,
+        "vitesse": 60,
+        "classe": "Rare",
+        "evolution": null
+    },
+    {
+        "nom": "Abra",
+        "types": [
+            "Psy"
+        ],
+        "pv": 25,
+        "attaque": 20,
+        "defense": 15,
+        "vitesse": 90,
+        "classe": "Rare",
+        "evolution": "Kadabra"
+    }
+]

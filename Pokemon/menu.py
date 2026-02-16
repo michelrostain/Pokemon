@@ -82,16 +82,29 @@ class Menu:
 
     def choisir_pokemon(self, seulement_base=False):
         candidats = self.mes_pokemons
+        
+        # --- CAS 1 : NOUVELLE PARTIE (STARTERS) ---
         if seulement_base:
+            # On ne garde que ceux qui peuvent évoluer (base)
             noms_evolues = [p.evolution_nom for p in self.mes_pokemons if p.evolution_nom]
-            candidats = [p for p in self.mes_pokemons if p.nom not in noms_evolues]
+            pool_starters = [p for p in self.mes_pokemons if p.nom not in noms_evolues]
+            
+            # ON PREND 3 AU HASARD (Comme tu le voulais)
+            if len(pool_starters) >= 3:
+                candidats = random.sample(pool_starters, 3)
+            else:
+                candidats = pool_starters
         
-        if not candidats: candidats = self.mes_pokemons
+        # --- CAS 2 : CONTINUER (Toute la liste) ---
+        else:
+            # On prend tout l'inventaire sans limiter à 3
+            candidats = self.mes_pokemons
+
+        # On envoie la liste (soit de 3, soit de 20) à l'écran
+        selection = self.interface.selectionner_starter_graphique(candidats)
         
-        choix = random.sample(candidats, 3) if len(candidats) > 3 else candidats
-        
-        selection = self.interface.selectionner_starter_graphique(choix)
-        if selection is None: return False
+        if selection is None:
+            return False
 
         self.pokemon_joueur = selection
         return True
@@ -101,6 +114,8 @@ class Menu:
         
         # Choix d'un adversaire au hasard
         data_adversaire = random.choice(self.catalogue_global)
+        # On s'assure que l'adversaire a une image préparée (sinon bug d'affichage possible)
+        self.interface.preparer_image(data_adversaire["nom"]) 
         self.pokemon_adversaire = self.creer_objet_pokemon(data_adversaire)
         
         # Lancement du combat
@@ -111,60 +126,51 @@ class Menu:
             # 1. Message de victoire
             self.interface.afficher_dialogue(f"Victoire ! {self.pokemon_adversaire.nom} ajouté.")
             self.gestion_pokedex.enregistrer_pokemon(self.pokemon_adversaire.nom)
-            pygame.time.delay(1000) # Petite pause pour lire
+            pygame.time.delay(1000)
             
-            # 2. Gain d'XP (50 points par victoire -> évolution en 2 combats)
+            # 2. Gain d'XP
             self.interface.afficher_dialogue(f"{self.pokemon_joueur.nom} gagne de l'expérience...")
             pygame.time.delay(1000)
             
             doit_evoluer = self.pokemon_joueur.gagner_xp(50)
             
-            # 3. Vérification de l'évolution
+            # 3. Évolution
             if doit_evoluer:
-                # On cherche les stats du Pokémon suivant (ex: "Herbizarre") dans la liste globale
                 nom_evo = self.pokemon_joueur.evolution_nom
                 stats_evo = next((p for p in self.catalogue_global if p["nom"] == nom_evo), None)
                 
                 if stats_evo:
                     self.interface.afficher_dialogue(f"Quoi ? {self.pokemon_joueur.nom} évolue !")
                     pygame.time.delay(2000)
-                    
-                    # On prépare la nouvelle image (grâce au cache de screen.py)
                     nouvelle_img = self.interface.preparer_image(nom_evo)
-                    
-                    # On applique la transformation
                     self.pokemon_joueur.evoluer(stats_evo, nouvelle_img)
-                    
-                    self.interface.afficher_dialogue(f"Félicitations ! Ton Pokémon est maintenant un {self.pokemon_joueur.nom} !")
+                    self.interface.afficher_dialogue(f"Félicitations ! C'est maintenant un {self.pokemon_joueur.nom} !")
                     pygame.time.delay(2000)
                     
-                    # On met à jour le Pokedex du joueur avec le nouveau nom
+                    # Mise à jour du nom dans le fichier de sauvegarde
+                    self.gestion_pokedex.supprimer_pokemon(data_adversaire["nom"]) # Petite astuce si besoin de nettoyer l'ancien
                     self.gestion_pokedex.enregistrer_pokemon(self.pokemon_joueur.nom)
             
         else:
-            # --- CAS DE DÉFAITE (MORT DU POKÉMON) ---
-            self.interface.afficher_dialogue(f"Défaite... {self.pokemon_joueur.nom} nous a quitté.")
+            # --- CAS DE DÉFAITE ---
+            self.interface.afficher_dialogue(f"Défaite... {self.pokemon_joueur.nom} s'enfuit de honte.")
             pygame.time.delay(2000)
 
-            # 1. On le supprime de la sauvegarde (JSON)
+            # 1. On le supprime de la sauvegarde (Le vrai juge de paix)
             self.gestion_pokedex.supprimer_pokemon(self.pokemon_joueur.nom)
 
-            # 2. On le supprime de la liste en mémoire (RAM)
-            # On utilise .remove() au lieu de .pop() pour cibler le bon !
-            if self.pokemon_joueur in self.mes_pokemons:
-                self.mes_pokemons.remove(self.pokemon_joueur)
+            # 2. On vérifie ce qu'il reste VRAIMENT dans la sauvegarde
+            survivants = self.gestion_pokedex.obtenir_pokedex_joueur()
 
-            # 3. Vérification : Reste-t-il des survivants ?
-            if not self.mes_pokemons:
-                self.interface.afficher_dialogue("Tu n'as plus de Pokémon... !!GAME OVER !!")
+            if not survivants:
+                # C'est vide, c'est la fin
+                self.interface.afficher_dialogue("Tu n'as plus de Pokémon... !! GAME OVER !!")
                 pygame.time.delay(3000)
-                # On pourrait ici retourner au menu principal ou quitter
-                # Pour l'instant, on laisse la boucle while du menu gérer le retour
+                # Retour au menu principal (la boucle while du menu gèrera la suite)
                 return 
             else:
-                self.interface.afficher_dialogue("Attention, il ne te reste plus beaucoup de choix.")
-                pygame.time.delay(2000)    # CORRECTION : Cette méthode gère l'écran "Mon Pokedex"
-    
+                self.interface.afficher_dialogue("Attention, tes forces diminuent...")
+                pygame.time.delay(2000)    
     def consulter_mon_pokedex(self):
         while True:
             mes_pokemons_data = self.gestion_pokedex.obtenir_pokedex_joueur()
@@ -176,21 +182,40 @@ class Menu:
                 break
 
     def lancer_ajout_via_pokedex(self):
-        catalogue = self.gestion_pokedex.catalogue
+        catalogue_complet = self.gestion_pokedex.catalogue
+        
+        # --- ETAPE DE FILTRAGE : GARDER UNIQUEMENT LES NON-EVOLUES ---
+        
+        # 1. On liste tous les noms qui sont des évolutions (ex: Herbizarre, Dracaufeu...)
+        # On regarde le champ "evolution" de tout le monde pour savoir qui est une "suite"
+        noms_devenus_evolutions = [p['evolution'] for p in catalogue_complet if p['evolution'] is not None]
+        
+        # 2. On garde seulement les Pokémons dont le nom n'apparaît pas dans la liste des évolutions
+        catalogue_filtre = [p for p in catalogue_complet if p['nom'] not in noms_devenus_evolutions]
+        
+        # -------------------------------------------------------------
+
         index = 0
         running = True
         while running:
-            self.interface.afficher_liste_scrollable(catalogue, index, 5)
+            # ATTENTION : On utilise maintenant 'catalogue_filtre' pour l'affichage
+            self.interface.afficher_liste_scrollable(catalogue_filtre, index, 5)
+            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: pygame.quit(); exit()
+                
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE: running = False
-                    if event.key == pygame.K_DOWN: index = min(index+1, len(catalogue)-5)
+                    # On borne l'index sur la taille de la liste FILTRÉE
+                    if event.key == pygame.K_DOWN: index = min(index+1, max(0, len(catalogue_filtre)-5))
                     if event.key == pygame.K_UP: index = max(0, index-1)
+                
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     ligne = self.interface.detecter_clic_liste_scroll(event.pos)
-                    if ligne != -1 and (index + ligne) < len(catalogue):
-                        nom = catalogue[index+ligne]["nom"]
+                    # On vérifie le clic par rapport à la liste FILTRÉE
+                    if ligne != -1 and (index + ligne) < len(catalogue_filtre):
+                        nom = catalogue_filtre[index+ligne]["nom"]
+                        
                         self.gestion_pokedex.enregistrer_pokemon(nom)
                         self.interface.afficher_dialogue(f"{nom} ajouté au Pokedex !")
                         pygame.time.delay(1000)

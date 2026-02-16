@@ -189,57 +189,119 @@ class Interface:
 
     def selectionner_starter_graphique(self, liste_candidats):
         running = True
+        index_depart = 0 
+        clock = pygame.time.Clock()
+        
+        # Variable pour savoir si on a besoin du scroll
+        # C'est la clé de ta demande : Vrai seulement si on a + de 3 pokémons
+        mode_scroll_actif = len(liste_candidats) > 3
+        
         while running:
+            # --- 1. GESTION DES EVENEMENTS ---
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit(); exit()
+                
+                # NAVIGATION CLAVIER (Seulement si scroll actif)
+                if event.type == pygame.KEYDOWN and mode_scroll_actif:
+                    if event.key == pygame.K_LEFT:
+                        if index_depart > 0:
+                            index_depart -= 1
+                    elif event.key == pygame.K_RIGHT:
+                        if index_depart + 3 < len(liste_candidats):
+                            index_depart += 1
+                
+                # SOURIS
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    mx, my = event.pos
+                    
+                    # Clic sur Flèches (Seulement si scroll actif)
+                    if mode_scroll_actif:
+                        # Flèche GAUCHE
+                        if index_depart > 0:
+                            if pygame.Rect(10, 260, 40, 50).collidepoint(mx, my):
+                                index_depart -= 1
+                                continue
+                        # Flèche DROITE
+                        if index_depart + 3 < len(liste_candidats):
+                            if pygame.Rect(750, 260, 40, 50).collidepoint(mx, my):
+                                index_depart += 1
+                                continue
+
+                    # Clic sur une Carte (Choix du Pokémon)
+                    # On affiche toujours max 3 cartes
+                    nb_a_afficher = min(3, len(liste_candidats) - index_depart)
+                    positions_x = [50, 300, 550]
+                    
+                    for i in range(nb_a_afficher):
+                        x = positions_x[i]
+                        rect_carte = pygame.Rect(x, 150, 200, 300)
+                        if rect_carte.collidepoint(mx, my):
+                            # On retourne le pokémon cliqué
+                            choix = liste_candidats[index_depart + i]
+                            # Optionnel : Empêcher de choisir un KO ?
+                            # if not choix.est_ko(): return choix
+                            return choix
+
+            # --- 2. AFFICHAGE ---
             self.screen.fill(self.BLANC)
-            self.afficher_texte_centre("CHOISIS TON POKÉMON", 50, self.NOIR, self.font_titre)
-            self.afficher_texte_centre("(Appuie sur ECHAP pour revenir au menu)", 90, self.GRIS_FONCE, self.font_petit)
-            self.afficher_texte_centre("Clique sur le pokémon choisi !", 500, self.GRIS_FONCE, self.font_petit)
+            titre = "CHOISIS TON STARTER" if not mode_scroll_actif else "CHOISIS TON COMBATTANT"
+            self.afficher_texte_centre(titre, 50, self.NOIR, self.font_titre)
 
-
-            largeur_carte = 200
-            espace = 50
-            total_largeur = (len(liste_candidats) * largeur_carte) + ((len(liste_candidats) - 1) * espace)
-            start_x = (self.WIDTH - total_largeur) // 2
+            # On récupère les 3 (ou moins) pokémons à afficher selon l'index
+            candidats_visibles = liste_candidats[index_depart : index_depart + 3]
+            positions_x = [50, 300, 550]
             
-            rects = []
-            
-            for i, p in enumerate(liste_candidats):
-                x = start_x + i * (largeur_carte + espace)
+            for i, p in enumerate(candidats_visibles):
+                x = positions_x[i]
                 y = 150
-                rect = pygame.Rect(x, y, largeur_carte, 300)
-                rects.append((rect, p))
                 
-                pygame.draw.rect(self.screen, self.GRIS_CLAIR, rect, border_radius=15)
-                pygame.draw.rect(self.screen, self.NOIR, rect, 2, border_radius=15)
+                # Couleur du cadre (Rouge si KO, Gris si OK)
+                couleur_bord = self.ROUGE if p.est_ko() else self.NOIR
                 
+                # Fond et cadre
+                rect_carte = pygame.Rect(x, y, 200, 300)
+                pygame.draw.rect(self.screen, self.GRIS_CLAIR, rect_carte)
+                pygame.draw.rect(self.screen, couleur_bord, rect_carte, 2)
+                
+                # Image
                 if p.image_surface:
                     img = pygame.transform.scale(p.image_surface, (150, 150))
                     self.screen.blit(img, (x + 25, y + 20))
                 
-                name_surf = self.font_texte.render(p.nom, True, self.NOIR)
-                self.screen.blit(name_surf, (x + (largeur_carte - name_surf.get_width())//2, y + 200))
+                # Stats
+                nom_s = self.font_texte.render(p.nom, True, self.NOIR)
+                self.screen.blit(nom_s, (x + (200 - nom_s.get_width())//2, y + 180))
                 
-                stats = f"PV: {p.pv} | ATK: {p.attaque}"
-                stats_surf = self.font_petit.render(stats, True, self.GRIS_FONCE)
-                self.screen.blit(stats_surf, (x + (largeur_carte - stats_surf.get_width())//2, y + 240))
+                etat_pv = f"{p.pv}/{p.pv_max}" if not p.est_ko() else "KO"
+                pv_s = self.font_petit.render(f"PV: {etat_pv}", True, couleur_bord)
+                self.screen.blit(pv_s, (x + (200 - pv_s.get_width())//2, y + 215))
 
+            # --- 3. INDICATEURS DE DEFILEMENT (UNIQUEMENT SI SCROLL ACTIF) ---
+            if mode_scroll_actif:
+                if index_depart > 0:
+                    # Triangle Gauche
+                    pygame.draw.polygon(self.screen, self.ROUGE, [(40, 300), (10, 280), (40, 260)])
+                
+                if index_depart + 3 < len(liste_candidats):
+                    # Triangle Droit
+                    pygame.draw.polygon(self.screen, self.ROUGE, [(760, 300), (790, 280), (760, 260)])
+
+                msg = "Flèches GAUCHE/DROITE pour faire défiler"
+                self.afficher_texte_centre(msg, 500, self.GRIS_FONCE, self.font_petit)
+            
+            # Mise à jour
             pygame.display.flip()
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT: pygame.quit(); exit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE: return None
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    mx, my = event.pos
-                    for r, poke in rects:
-                        if r.collidepoint(mx, my): return poke
-
+            clock.tick(60)
+            
+            # --- 4. GESTION ÉVÉNEMENTS ---
     def afficher_combattants(self, p_joueur, p_adversaire):
         self.screen.fill(self.BLANC)
         
         # Joueur
         if p_joueur.image_surface:
             img_j = pygame.transform.scale(p_joueur.image_surface, (250, 250))
+            img_j = pygame.transform.flip(img_j, True, False)
             self.screen.blit(img_j, (80, 280))
         
         pygame.draw.rect(self.screen, self.GRIS_FONCE, (450, 400, 300, 80))
