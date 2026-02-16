@@ -144,21 +144,32 @@ class Menu:
             # ---------------------------------------------------
             
             # 3. Évolution
+            # 4. Évolution
             if doit_evoluer:
                 nom_evo = self.pokemon_joueur.evolution_nom
                 stats_evo = next((p for p in self.catalogue_global if p["nom"] == nom_evo), None)
                 
                 if stats_evo:
-                    self.interface.afficher_dialogue(f"Quoi ? {self.pokemon_joueur.nom} évolue !")
+                    # --- ETAPE 1 : ON MEMORISE L'ANCIEN NOM ---
+                    ancien_nom = self.pokemon_joueur.nom
+                    # ------------------------------------------
+
+                    self.interface.afficher_dialogue(f"Quoi ? {ancien_nom} évolue !")
                     pygame.time.delay(2000)
+                    
                     nouvelle_img = self.interface.preparer_image(nom_evo)
                     self.pokemon_joueur.evoluer(stats_evo, nouvelle_img)
+                    
                     self.interface.afficher_dialogue(f"Félicitations ! C'est maintenant un {self.pokemon_joueur.nom} !")
                     pygame.time.delay(2000)
                     
-                    # Mise à jour du nom dans le fichier de sauvegarde
-                    self.gestion_pokedex.supprimer_pokemon(data_adversaire["nom"]) # Petite astuce si besoin de nettoyer l'ancien
-                    self.gestion_pokedex.enregistrer_pokemon(self.pokemon_joueur.nom)
+                    # --- ETAPE 2 : NETTOYAGE DE LA SAUVEGARDE ---
+                    # On supprime l'ancienne forme (ex: Bulbizarre)
+                    self.gestion_pokedex.supprimer_pokemon(ancien_nom)
+                    
+                    # On sauvegarde la nouvelle forme (ex: Herbizarre) avec son XP
+                    self.gestion_pokedex.mettre_a_jour_progression(self.pokemon_joueur)
+                    # --------------------------------------------
             
         else:
             # --- CAS DE DÉFAITE ---

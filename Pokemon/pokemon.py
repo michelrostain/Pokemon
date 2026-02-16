@@ -38,13 +38,18 @@ class Pokemon:
 
     # --- NOUVEAU : Méthodes pour l'évolution ---
     def gagner_xp(self, montant):
-        """Ajoute de l'XP et renvoie True si le Pokémon doit évoluer"""
+        """Ajoute de l'XP et renvoie True SEULEMENT si une évolution est possible"""
         self.point_exp += montant
         print(f"DEBUG: {self.nom} a {self.point_exp}/{self.seuil_evolution} XP")
         
-        # Si on a assez d'XP et qu'une évolution existe
-        if self.point_exp >= self.seuil_evolution and self.evolution_nom:
+        # 1. Sécurité absolue : Si l'évolution est 'null' (None), on renvoie False direct.
+        if self.evolution_nom is None:
+            return False
+
+        # 2. Vérification du seuil d'expérience
+        if self.point_exp >= self.seuil_evolution:
             return True
+            
         return False
 
     def evoluer(self, nouvelles_stats, nouvelle_image):
