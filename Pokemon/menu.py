@@ -1,192 +1,197 @@
 import random
 import pygame
-import os
 import sys
-# On garde tes imports
-from pokemon import Pokemon 
-# On importe TA nouvelle classe qui gère les données
-from pokedex import Pokedex 
+from pokemon import Pokemon
+from pokedex import Pokedex
 from combat import Combat
 
 class Menu:
     def __init__(self, interface):
         self.interface = interface
-        self.mes_pokemons = [] 
+        self.gestion_pokedex = Pokedex()
+        self.mes_pokemons = []        
+        self.catalogue_global = []    
+        
         self.pokemon_joueur = None
         self.pokemon_adversaire = None
-        self.nom_dresseur = ""
-        
-        # --- NOUVEAUTÉ : On connecte le cerveau du Pokedex ---
-        self.gestion_pokedex = Pokedex() 
 
     def lancer_jeu(self, liste_brute):
+        self.catalogue_global = liste_brute
         self.interface.afficher_splash_screen()
         self.gerer_accueil(liste_brute)
 
     def gerer_accueil(self, liste_brute):
-        decision = self.interface.afficher_menu_accueil()
+        while True:
+            decision = self.interface.afficher_menu_accueil()
+            self.mes_pokemons = [] 
 
-        if decision == "NOUVEAU":
-            self.nom_dresseur = self.saisir_nom_dresseur()
-            self.charger_donnees(liste_brute) 
-            self.choisir_pokemon()
-            self.generer_adversaire()
-            # On crée l'instance du combat
-            combat_en_cours = Combat(self.interface, self.pokemon_joueur, self.pokemon_adversaire)
+            if decision == "NOUVEAU":
+                self.gestion_pokedex.vider_pokedex()
+                self.charger_donnees_dans_mes_pokemons(liste_brute)
+                
+                if not self.choisir_pokemon(seulement_base=True):
+                    continue
+                
+                self.gestion_pokedex.enregistrer_pokemon(self.pokemon_joueur.nom)
+                self.demarrer_cycle_combat()
 
-            # On lance la bagarre !
-            resultat = combat_en_cours.lancer_combat()
+            elif decision == "REPRENDRE":
+                sauvegarde = self.gestion_pokedex.obtenir_pokedex_joueur()
+                if not sauvegarde:
+                    self.interface.afficher_dialogue("Pokedex vide ! Commencez une nouvelle partie.")
+                    pygame.time.delay(2000)
+                    continue
+                
+                self.charger_donnees_dans_mes_pokemons(sauvegarde)
+                
+                if not self.choisir_pokemon(seulement_base=False):
+                    continue
+                
+                self.demarrer_cycle_combat()
 
-            # Une fois le combat fini (return), on revient au menu ou on quitte
-            print(f"Fin du combat : {resultat}")
-            self.lancer_jeu(self.mes_pokemons) # Retour à l'accueil pour rejouer
+            elif decision == "AJOUTER":
+                # CORRECTION : On appelle bien la consultation avant l'ajout
+                self.consulter_mon_pokedex()
 
-        elif decision == "REPRENDRE":
-            self.nom_dresseur = "Dresseur" 
-            self.charger_donnees(liste_brute)
-            self.choisir_pokemon()
-            self.generer_adversaire()
-            # On crée l'instance du combat
-            combat_en_cours = Combat(self.interface, self.pokemon_joueur, self.pokemon_adversaire)
+    def charger_donnees_dans_mes_pokemons(self, liste_source):
+        self.mes_pokemons = []
+        for i, p in enumerate(liste_source):
+            if len(liste_source) > 5:
+                self.interface.afficher_ecran_chargement(i + 1, len(liste_source))
+            new_p = self.creer_objet_pokemon(p)
+            self.mes_pokemons.append(new_p)
 
-            # On lance la bagarre !
-            resultat = combat_en_cours.lancer_combat()
-
-            # Une fois le combat fini (return), on revient au menu ou on quitte
-            print(f"Fin du combat : {resultat}")
-            self.lancer_jeu(self.mes_pokemons) # Retour à l'accueil pour rejouer
-
-        elif decision == "AJOUTER":
-            # --- CHANGEMENT ICI ---
-            # On n'appelle plus le formulaire manuel, mais le catalogue
-            self.lancer_ajout_via_pokedex()
-
-    def saisir_nom_dresseur(self):
-        nom = ""
-        saisie_en_cours = True
-        while saisie_en_cours:
-            self.interface.afficher_saisie_nom(nom)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        if len(nom) > 0: saisie_en_cours = False
-                    elif event.key == pygame.K_BACKSPACE:
-                        nom = nom[:-1]
-                    else:
-                        if len(nom) < 15 and event.unicode.isprintable():
-                            nom += event.unicode
-        return nom
-
-    def charger_donnees(self, liste_brute):
-        nb_total = len(liste_brute)
-        for i, p in enumerate(liste_brute):
-            self.interface.afficher_ecran_chargement(i + 1, nb_total)
-            
-            nom_p = p["nom"]
-            chemin_image = f"Assets/Images/{nom_p}.png"
-            if not os.path.exists(chemin_image):
-                chemin_image = "Assets/Images/PokeDefaut.png"
-
-            nouveau_p = Pokemon(
-                nom=p["nom"],
-                pv=p["pv"],
-                attaque=p["attaque"],
-                defense=p["defense"],
-                vitesse=p.get("vitesse", 50),
-                image_url=chemin_image,
-                type_principal=p["types"][0],
-                evolution_nom=p["evolution"]
-            )
-            nouveau_p.image_surface = self.interface.preparer_image(chemin_image)
-            self.mes_pokemons.append(nouveau_p)
-
-    def choisir_pokemon(self):
-        choix_possibles = random.sample(self.mes_pokemons, 3)
-        selectionne = False
-        while not selectionne:
-            self.interface.afficher_menu_selection(choix_possibles)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_1:
-                        self.pokemon_joueur = choix_possibles[0]
-                        selectionne = True
-                    elif event.key == pygame.K_2:
-                        self.pokemon_joueur = choix_possibles[1]
-                        selectionne = True
-                    elif event.key == pygame.K_3:
-                        self.pokemon_joueur = choix_possibles[2]
-                        selectionne = True
-            self.interface.rafraichir()
-        return self.pokemon_joueur
-
-    def generer_adversaire(self):
-        self.pokemon_adversaire = random.choice(self.mes_pokemons)
-        return self.pokemon_adversaire
-
-    # =========================================================
-    # NOUVELLE LOGIQUE QUI UTILISE TON FICHIER POKEDEX.PY
-    # =========================================================
-    def lancer_ajout_via_pokedex(self):
-        """
-        Affiche le catalogue (chargé par Pokedex class) et permet d'ajouter
-        un Pokémon à la sauvegarde via la méthode enregistrer_pokemon.
-        """
-        # 1. On récupère la liste complète depuis ta classe Pokedex
-        catalogue = self.gestion_pokedex.catalogue
+    def creer_objet_pokemon(self, dictionnaire_stats):
+        nom_p = dictionnaire_stats["nom"]
         
-        if not catalogue:
-            print("Erreur : Impossible de charger le catalogue (pokemon.json absent ?)")
-            return
+        # On passe le NOM (pas le chemin) pour utiliser le cache
+        image_surface = self.interface.preparer_image(nom_p)
+        
+        p = Pokemon(
+            nom=nom_p,
+            pv=dictionnaire_stats["pv"],
+            attaque=dictionnaire_stats["attaque"],
+            defense=dictionnaire_stats["defense"],
+            vitesse=dictionnaire_stats.get("vitesse", 50),
+            image_url=f"Assets/Images/{nom_p}.png",
+            type_principal=dictionnaire_stats["types"][0],
+            evolution_nom=dictionnaire_stats["evolution"]
+        )
+        p.image_surface = image_surface
+        return p
 
-        # Variables pour le scroll
-        index_scroll = 0      
-        nb_visibles = 5       
-        choix_fait = False
+    def choisir_pokemon(self, seulement_base=False):
+        candidats = self.mes_pokemons
+        if seulement_base:
+            noms_evolues = [p.evolution_nom for p in self.mes_pokemons if p.evolution_nom]
+            candidats = [p for p in self.mes_pokemons if p.nom not in noms_evolues]
+        
+        if not candidats: candidats = self.mes_pokemons
+        
+        choix = random.sample(candidats, 3) if len(candidats) > 3 else candidats
+        
+        selection = self.interface.selectionner_starter_graphique(choix)
+        if selection is None: return False
 
-        while not choix_fait:
-            # On demande à l'interface d'afficher la liste (elle a besoin de savoir où on en est)
-            self.interface.afficher_liste_scrollable(catalogue, index_scroll, nb_visibles)
+        self.pokemon_joueur = selection
+        return True
 
+    def demarrer_cycle_combat(self):
+        if not self.catalogue_global: return
+        
+        # Choix d'un adversaire au hasard
+        data_adversaire = random.choice(self.catalogue_global)
+        self.pokemon_adversaire = self.creer_objet_pokemon(data_adversaire)
+        
+        # Lancement du combat
+        combat = Combat(self.interface, self.pokemon_joueur, self.pokemon_adversaire)
+        resultat = combat.lancer_combat()
+        
+        if resultat == "VICTOIRE":
+            # 1. Message de victoire
+            self.interface.afficher_dialogue(f"Victoire ! {self.pokemon_adversaire.nom} ajouté.")
+            self.gestion_pokedex.enregistrer_pokemon(self.pokemon_adversaire.nom)
+            pygame.time.delay(1000) # Petite pause pour lire
+            
+            # 2. Gain d'XP (50 points par victoire -> évolution en 2 combats)
+            self.interface.afficher_dialogue(f"{self.pokemon_joueur.nom} gagne de l'expérience...")
+            pygame.time.delay(1000)
+            
+            doit_evoluer = self.pokemon_joueur.gagner_xp(50)
+            
+            # 3. Vérification de l'évolution
+            if doit_evoluer:
+                # On cherche les stats du Pokémon suivant (ex: "Herbizarre") dans la liste globale
+                nom_evo = self.pokemon_joueur.evolution_nom
+                stats_evo = next((p for p in self.catalogue_global if p["nom"] == nom_evo), None)
+                
+                if stats_evo:
+                    self.interface.afficher_dialogue(f"Quoi ? {self.pokemon_joueur.nom} évolue !")
+                    pygame.time.delay(2000)
+                    
+                    # On prépare la nouvelle image (grâce au cache de screen.py)
+                    nouvelle_img = self.interface.preparer_image(nom_evo)
+                    
+                    # On applique la transformation
+                    self.pokemon_joueur.evoluer(stats_evo, nouvelle_img)
+                    
+                    self.interface.afficher_dialogue(f"Félicitations ! Ton Pokémon est maintenant un {self.pokemon_joueur.nom} !")
+                    pygame.time.delay(2000)
+                    
+                    # On met à jour le Pokedex du joueur avec le nouveau nom
+                    self.gestion_pokedex.enregistrer_pokemon(self.pokemon_joueur.nom)
+            
+        else:
+            # --- CAS DE DÉFAITE (MORT DU POKÉMON) ---
+            self.interface.afficher_dialogue(f"Défaite... {self.pokemon_joueur.nom} nous a quitté.")
+            pygame.time.delay(2000)
+
+            # 1. On le supprime de la sauvegarde (JSON)
+            self.gestion_pokedex.supprimer_pokemon(self.pokemon_joueur.nom)
+
+            # 2. On le supprime de la liste en mémoire (RAM)
+            # On utilise .remove() au lieu de .pop() pour cibler le bon !
+            if self.pokemon_joueur in self.mes_pokemons:
+                self.mes_pokemons.remove(self.pokemon_joueur)
+
+            # 3. Vérification : Reste-t-il des survivants ?
+            if not self.mes_pokemons:
+                self.interface.afficher_dialogue("Tu n'as plus de Pokémon... !!GAME OVER !!")
+                pygame.time.delay(3000)
+                # On pourrait ici retourner au menu principal ou quitter
+                # Pour l'instant, on laisse la boucle while du menu gérer le retour
+                return 
+            else:
+                self.interface.afficher_dialogue("Attention, il ne te reste plus beaucoup de choix.")
+                pygame.time.delay(2000)    # CORRECTION : Cette méthode gère l'écran "Mon Pokedex"
+    
+    def consulter_mon_pokedex(self):
+        while True:
+            mes_pokemons_data = self.gestion_pokedex.obtenir_pokedex_joueur()
+            action = self.interface.afficher_inventaire_joueur(mes_pokemons_data)
+            
+            if action == "ALLER_AJOUT":
+                self.lancer_ajout_via_pokedex()
+            else:
+                break
+
+    def lancer_ajout_via_pokedex(self):
+        catalogue = self.gestion_pokedex.catalogue
+        index = 0
+        running = True
+        while running:
+            self.interface.afficher_liste_scrollable(catalogue, index, 5)
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-
-                # --- Scroll Clavier ---
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_DOWN:
-                        if index_scroll < len(catalogue) - nb_visibles:
-                            index_scroll += 1
-                    elif event.key == pygame.K_UP:
-                        if index_scroll > 0:
-                            index_scroll -= 1
-                    elif event.key == pygame.K_ESCAPE:
-                        choix_fait = True # Annuler
-
-                # --- Scroll Souris ---
-                elif event.type == pygame.MOUSEWHEEL:
-                    index_scroll -= event.y 
-                    index_scroll = max(0, min(index_scroll, len(catalogue) - nb_visibles))
-
-                # --- Validation Souris ---
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        # L'interface renvoie sur quelle ligne (0 à 4) on a cliqué
-                        ligne = self.interface.detecter_clic_liste_scroll(event.pos)
-                        
-                        if ligne != -1:
-                            index_reel = index_scroll + ligne
-                            if 0 <= index_reel < len(catalogue):
-                                # BINGO : On a choisi un pokémon
-                                pokemon_choisi = catalogue[index_reel]
-                                
-                                # C'est ICI qu'on utilise ta classe Pokedex pour sauvegarder !
-                                self.gestion_pokedex.enregistrer_pokemon(pokemon_choisi["nom"])
-                                
-                                choix_fait = True # Retour au menu
+                if event.type == pygame.QUIT: pygame.quit(); exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE: running = False
+                    if event.key == pygame.K_DOWN: index = min(index+1, len(catalogue)-5)
+                    if event.key == pygame.K_UP: index = max(0, index-1)
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    ligne = self.interface.detecter_clic_liste_scroll(event.pos)
+                    if ligne != -1 and (index + ligne) < len(catalogue):
+                        nom = catalogue[index+ligne]["nom"]
+                        self.gestion_pokedex.enregistrer_pokemon(nom)
+                        self.interface.afficher_dialogue(f"{nom} ajouté au Pokedex !")
+                        pygame.time.delay(1000)
+                        running = False
