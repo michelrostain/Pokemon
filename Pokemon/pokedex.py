@@ -61,3 +61,28 @@ class Pokedex:
             json.dump(nouvelle_liste, f, indent=4)
         
         print(f"{nom_pokemon} a été supprimé de la sauvegarde.")
+
+    def mettre_a_jour_progression(self, pokemon_objet):
+        """Met à jour l'XP d'un Pokémon existant dans la sauvegarde"""
+        data = self.obtenir_pokedex_joueur()
+        
+        trouve = False
+        for p in data:
+            if p['nom'] == pokemon_objet.nom:
+                # On met à jour l'XP dans le fichier JSON
+                p['xp'] = pokemon_objet.point_exp
+                trouve = True
+                break
+        
+        # Si on ne l'a pas trouvé (ex: nouvelle capture), on l'ajoute proprement avec son XP
+        if not trouve:
+            infos = self.rechercher_pokemon(pokemon_objet.nom)
+            if infos:
+                infos['xp'] = pokemon_objet.point_exp # On injecte l'XP
+                data.append(infos)
+
+        # On sauvegarde le tout
+        with open(self.fichier_sauvegarde, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+        
+        print(f"Progression sauvegardée pour {pokemon_objet.nom} (XP: {pokemon_objet.point_exp})")

@@ -1,7 +1,7 @@
 import pygame
 
 class Pokemon:
-    def __init__(self, nom, pv, attaque, defense, vitesse, image_url, type_principal, evolution_nom):
+    def __init__(self, nom, pv, attaque, defense, vitesse, image_url, type_principal, evolution_nom, xp_actuel=0):
         self.nom = nom
         self.pv_max = pv      # On retient les PV max pour soigner et évoluer
         self.pv = pv
@@ -13,7 +13,7 @@ class Pokemon:
         self.evolution_nom = evolution_nom
         
         # --- NOUVEAU : Gestion de l'XP ---
-        self.point_exp = 0
+        self.point_exp = xp_actuel
         self.seuil_evolution = 100  # XP nécessaire pour évoluer
         
         self.ko = False

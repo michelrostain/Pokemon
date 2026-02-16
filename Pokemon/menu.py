@@ -67,6 +67,9 @@ class Menu:
         # On passe le NOM (pas le chemin) pour utiliser le cache
         image_surface = self.interface.preparer_image(nom_p)
         
+        # On récupère l'XP si elle existe dans le dictionnaire, sinon 0
+        xp_sauvegardee = dictionnaire_stats.get("xp", 0)
+        
         p = Pokemon(
             nom=nom_p,
             pv=dictionnaire_stats["pv"],
@@ -75,7 +78,8 @@ class Menu:
             vitesse=dictionnaire_stats.get("vitesse", 50),
             image_url=f"Assets/Images/{nom_p}.png",
             type_principal=dictionnaire_stats["types"][0],
-            evolution_nom=dictionnaire_stats["evolution"]
+            evolution_nom=dictionnaire_stats["evolution"],
+            xp_actuel=xp_sauvegardee
         )
         p.image_surface = image_surface
         return p
@@ -123,16 +127,21 @@ class Menu:
         resultat = combat.lancer_combat()
         
         if resultat == "VICTOIRE":
-            # 1. Message de victoire
             self.interface.afficher_dialogue(f"Victoire ! {self.pokemon_adversaire.nom} ajouté.")
+            
+            # --- 1. On enregistre l'adversaire capturé (XP = 0 par défaut) ---
             self.gestion_pokedex.enregistrer_pokemon(self.pokemon_adversaire.nom)
             pygame.time.delay(1000)
             
-            # 2. Gain d'XP
+            # --- 2. Le joueur gagne de l'XP ---
             self.interface.afficher_dialogue(f"{self.pokemon_joueur.nom} gagne de l'expérience...")
             pygame.time.delay(1000)
             
             doit_evoluer = self.pokemon_joueur.gagner_xp(50)
+            
+            # --- 3. IMPORTANT : ON SAUVEGARDE L'XP DU JOUEUR ---
+            self.gestion_pokedex.mettre_a_jour_progression(self.pokemon_joueur)
+            # ---------------------------------------------------
             
             # 3. Évolution
             if doit_evoluer:
