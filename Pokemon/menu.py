@@ -2,83 +2,77 @@ import random
 import pygame
 import os
 import sys
-import json
-from Pokemon.pokemon import Pokemon 
+# On garde tes imports
+from pokemon import Pokemon 
+# On importe TA nouvelle classe qui gère les données
+from pokedex import Pokedex 
+from combat import Combat
 
 class Menu:
     def __init__(self, interface):
-        """
-        Le constructeur reçoit l'objet 'interface' qui gère Pygame.
-        Cela permet de séparer la logique du visuel.
-        """
         self.interface = interface
-        self.mes_pokemons = [] # Liste des instances de Pokemon créées
+        self.mes_pokemons = [] 
         self.pokemon_joueur = None
         self.pokemon_adversaire = None
-        self.nom_dresseur = "" # Variable pour stocker le nom du joueur
+        self.nom_dresseur = ""
+        
+        # --- NOUVEAUTÉ : On connecte le cerveau du Pokedex ---
+        self.gestion_pokedex = Pokedex() 
 
     def lancer_jeu(self, liste_brute):
-        """
-        Orchestre tout le démarrage du jeu :
-        Splash -> Accueil -> (Nom) -> Chargement -> Choix -> Combat
-        """
-        # 1. Ecran Splash Screen (3 secondes)
         self.interface.afficher_splash_screen()
-
-        # 2. Ecran Accueil (Nouvelle / Reprendre / Ajouter)
         self.gerer_accueil(liste_brute)
 
     def gerer_accueil(self, liste_brute):
-        """
-        Gère la décision prise dans le menu principal.
-        """
         decision = self.interface.afficher_menu_accueil()
 
         if decision == "NOUVEAU":
-            # 3. Ecran Saisie du Nom
             self.nom_dresseur = self.saisir_nom_dresseur()
-            
-            # 4. Ecran Chargement
             self.charger_donnees(liste_brute) 
-            
-            # 5. Ecran Choix du Pokemon
             self.choisir_pokemon()
-            
-            # 6. Lancement du combat
             self.generer_adversaire()
-            self.interface.afficher_combattants(self.pokemon_joueur, self.pokemon_adversaire)
+            # On crée l'instance du combat
+            combat_en_cours = Combat(self.interface, self.pokemon_joueur, self.pokemon_adversaire)
+
+            # On lance la bagarre !
+            resultat = combat_en_cours.lancer_combat()
+
+            # Une fois le combat fini (return), on revient au menu ou on quitte
+            print(f"Fin du combat : {resultat}")
+            self.lancer_jeu(self.mes_pokemons) # Retour à l'accueil pour rejouer
 
         elif decision == "REPRENDRE":
-            self.nom_dresseur = "Dresseur" # A améliorer avec une vraie sauvegarde plus tard
-            
+            self.nom_dresseur = "Dresseur" 
             self.charger_donnees(liste_brute)
             self.choisir_pokemon()
-            
             self.generer_adversaire()
-            self.interface.afficher_combattants(self.pokemon_joueur, self.pokemon_adversaire)
+            # On crée l'instance du combat
+            combat_en_cours = Combat(self.interface, self.pokemon_joueur, self.pokemon_adversaire)
+
+            # On lance la bagarre !
+            resultat = combat_en_cours.lancer_combat()
+
+            # Une fois le combat fini (return), on revient au menu ou on quitte
+            print(f"Fin du combat : {resultat}")
+            self.lancer_jeu(self.mes_pokemons) # Retour à l'accueil pour rejouer
 
         elif decision == "AJOUTER":
-            self.lancer_formulaire_ajout()
+            # --- CHANGEMENT ICI ---
+            # On n'appelle plus le formulaire manuel, mais le catalogue
+            self.lancer_ajout_via_pokedex()
 
     def saisir_nom_dresseur(self):
-        """
-        Gère la boucle logique pour que l'utilisateur tape son nom.
-        """
         nom = ""
         saisie_en_cours = True
-
         while saisie_en_cours:
             self.interface.afficher_saisie_nom(nom)
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
-                        if len(nom) > 0:
-                            saisie_en_cours = False
+                        if len(nom) > 0: saisie_en_cours = False
                     elif event.key == pygame.K_BACKSPACE:
                         nom = nom[:-1]
                     else:
@@ -87,12 +81,7 @@ class Menu:
         return nom
 
     def charger_donnees(self, liste_brute):
-        """
-        Parcourt le JSON brut, crée les objets Pokemon et 
-        demande à l'interface d'afficher la progression.
-        """
         nb_total = len(liste_brute)
-        
         for i, p in enumerate(liste_brute):
             self.interface.afficher_ecran_chargement(i + 1, nb_total)
             
@@ -111,25 +100,18 @@ class Menu:
                 type_principal=p["types"][0],
                 evolution_nom=p["evolution"]
             )
-            
             nouveau_p.image_surface = self.interface.preparer_image(chemin_image)
             self.mes_pokemons.append(nouveau_p)
 
     def choisir_pokemon(self):
-        """
-        Gère la logique de sélection du Pokémon par le joueur.
-        """
         choix_possibles = random.sample(self.mes_pokemons, 3)
         selectionne = False
-
         while not selectionne:
             self.interface.afficher_menu_selection(choix_possibles)
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_1:
                         self.pokemon_joueur = choix_possibles[0]
@@ -140,100 +122,71 @@ class Menu:
                     elif event.key == pygame.K_3:
                         self.pokemon_joueur = choix_possibles[2]
                         selectionne = True
-            
             self.interface.rafraichir()
-            
-        print(f"Joueur a choisi : {self.pokemon_joueur.nom}")
         return self.pokemon_joueur
 
     def generer_adversaire(self):
         self.pokemon_adversaire = random.choice(self.mes_pokemons)
-        print(f"L'adversaire sera : {self.pokemon_adversaire.nom}")
         return self.pokemon_adversaire
 
-    def lancer_formulaire_ajout(self):
+    # =========================================================
+    # NOUVELLE LOGIQUE QUI UTILISE TON FICHIER POKEDEX.PY
+    # =========================================================
+    def lancer_ajout_via_pokedex(self):
         """
-        Gère la boucle d'interaction pour le formulaire de création.
+        Affiche le catalogue (chargé par Pokedex class) et permet d'ajouter
+        un Pokémon à la sauvegarde via la méthode enregistrer_pokemon.
         """
-        nouvel_ajout = {
-            "nom": "",
-            "type": "",
-            "pv": "",
-            "attaque": "",
-            "defense": ""
-        }
+        # 1. On récupère la liste complète depuis ta classe Pokedex
+        catalogue = self.gestion_pokedex.catalogue
         
-        champ_actif = None 
-        en_creation = True
+        if not catalogue:
+            print("Erreur : Impossible de charger le catalogue (pokemon.json absent ?)")
+            return
 
-        while en_creation:
-            # On envoie les données et l'état (quel champ est actif) à l'interface
-            self.interface.afficher_formulaire(nouvel_ajout, champ_actif)
+        # Variables pour le scroll
+        index_scroll = 0      
+        nb_visibles = 5       
+        choix_fait = False
+
+        while not choix_fait:
+            # On demande à l'interface d'afficher la liste (elle a besoin de savoir où on en est)
+            self.interface.afficher_liste_scrollable(catalogue, index_scroll, nb_visibles)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
 
-                # --- SOURIS ---
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    # L'interface doit nous dire sur quoi on a cliqué
-                    zone_cliquee = self.interface.detecter_clic_formulaire(event.pos)
-                    
-                    if zone_cliquee == "VALIDER":
-                        if all(valeur != "" for valeur in nouvel_ajout.values()):
-                            self.sauvegarder_nouveau_pokemon(nouvel_ajout)
-                            en_creation = False
-                    
-                    elif zone_cliquee == "RETOUR":
-                        en_creation = False
+                # --- Scroll Clavier ---
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_DOWN:
+                        if index_scroll < len(catalogue) - nb_visibles:
+                            index_scroll += 1
+                    elif event.key == pygame.K_UP:
+                        if index_scroll > 0:
+                            index_scroll -= 1
+                    elif event.key == pygame.K_ESCAPE:
+                        choix_fait = True # Annuler
+
+                # --- Scroll Souris ---
+                elif event.type == pygame.MOUSEWHEEL:
+                    index_scroll -= event.y 
+                    index_scroll = max(0, min(index_scroll, len(catalogue) - nb_visibles))
+
+                # --- Validation Souris ---
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        # L'interface renvoie sur quelle ligne (0 à 4) on a cliqué
+                        ligne = self.interface.detecter_clic_liste_scroll(event.pos)
                         
-                    else:
-                        champ_actif = zone_cliquee
-
-                # --- CLAVIER ---
-                if event.type == pygame.KEYDOWN and champ_actif is not None:
-                    if event.key == pygame.K_BACKSPACE:
-                        nouvel_ajout[champ_actif] = nouvel_ajout[champ_actif][:-1]
-                    
-                    elif event.key == pygame.K_TAB:
-                        pass 
-
-                    else:
-                        # Filtre chiffres pour les stats
-                        if champ_actif in ["pv", "attaque", "defense"]:
-                            if event.unicode.isdigit() and len(nouvel_ajout[champ_actif]) < 3:
-                                nouvel_ajout[champ_actif] += event.unicode
-                        # Filtre texte pour le reste
-                        else:
-                            if len(nouvel_ajout[champ_actif]) < 12:
-                                nouvel_ajout[champ_actif] += event.unicode
-
-    def sauvegarder_nouveau_pokemon(self, donnees):
-        """
-        Ecrit le nouveau pokemon dans le fichier JSON.
-        """
-        try:
-            pokemon_propre = {
-                "nom": donnees["nom"],
-                "types": [donnees["type"]],
-                "pv": int(donnees["pv"]),
-                "attaque": int(donnees["attaque"]),
-                "defense": int(donnees["defense"]),
-                "vitesse": 50,
-                "evolution": None,
-                "image": "Assets/Images/PokeDefaut.png" 
-            }
-
-            with open("pokedex.json", "r", encoding="utf-8") as f:
-                contenu_json = json.load(f)
-
-            contenu_json.append(pokemon_propre)
-
-            with open("pokedex.json", "w", encoding="utf-8") as f:
-                json.dump(contenu_json, f, indent=4, ensure_ascii=False)
-            
-            print(f"Succès : {donnees['nom']} a été ajouté au Pokédex !")
-
-        except Exception as e:
-            print(f"Erreur lors de la sauvegarde : {e}")
+                        if ligne != -1:
+                            index_reel = index_scroll + ligne
+                            if 0 <= index_reel < len(catalogue):
+                                # BINGO : On a choisi un pokémon
+                                pokemon_choisi = catalogue[index_reel]
+                                
+                                # C'est ICI qu'on utilise ta classe Pokedex pour sauvegarder !
+                                self.gestion_pokedex.enregistrer_pokemon(pokemon_choisi["nom"])
+                                
+                                choix_fait = True # Retour au menu

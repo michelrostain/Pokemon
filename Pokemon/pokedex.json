@@ -1,0 +1,14 @@
+[
+    {
+        "nom": "Rattata",
+        "types": [
+            "Normal"
+        ],
+        "pv": 30,
+        "attaque": 56,
+        "defense": 35,
+        "vitesse": 72,
+        "classe": "Commun",
+        "evolution": "Rattatac"
+    }
+]
