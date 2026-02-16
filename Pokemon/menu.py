@@ -1,7 +1,8 @@
 import random
 import pygame
 import os
-import sys # Pour quitter proprement
+import sys
+import json
 from mainclass import Pokemon 
 
 class Menu:
@@ -18,21 +19,19 @@ class Menu:
 
     def lancer_jeu(self, liste_brute):
         """
-        Cette méthode orchestre tout le démarrage du jeu :
+        Orchestre tout le démarrage du jeu :
         Splash -> Accueil -> (Nom) -> Chargement -> Choix -> Combat
         """
         # 1. Ecran Splash Screen (3 secondes)
         self.interface.afficher_splash_screen()
 
         # 2. Ecran Accueil (Nouvelle / Reprendre / Ajouter)
-        # On passe la liste_brute car on en aura besoin plus tard
         self.gerer_accueil(liste_brute)
 
     def gerer_accueil(self, liste_brute):
         """
         Gère la décision prise dans le menu principal.
         """
-        # On demande à l'interface d'afficher les choix et d'attendre une réponse
         decision = self.interface.afficher_menu_accueil()
 
         if decision == "NOUVEAU":
@@ -40,21 +39,18 @@ class Menu:
             self.nom_dresseur = self.saisir_nom_dresseur()
             
             # 4. Ecran Chargement
-            # Ici, tu pourras ajouter la ligne pour vider le JSON si nécessaire
             self.charger_donnees(liste_brute) 
             
             # 5. Ecran Choix du Pokemon
             self.choisir_pokemon()
             
-            # 6. Lancement du combat (Génération adversaire + Affichage)
+            # 6. Lancement du combat
             self.generer_adversaire()
             self.interface.afficher_combattants(self.pokemon_joueur, self.pokemon_adversaire)
 
         elif decision == "REPRENDRE":
-            # Simulation du chargement du nom (à connecter à ton JSON de sauvegarde plus tard)
-            self.nom_dresseur = "Dresseur" 
+            self.nom_dresseur = "Dresseur" # A améliorer avec une vraie sauvegarde plus tard
             
-            # On charge directement les données sans demander le nom
             self.charger_donnees(liste_brute)
             self.choisir_pokemon()
             
@@ -62,7 +58,6 @@ class Menu:
             self.interface.afficher_combattants(self.pokemon_joueur, self.pokemon_adversaire)
 
         elif decision == "AJOUTER":
-            # On lance ton formulaire spécial
             self.lancer_formulaire_ajout()
 
     def saisir_nom_dresseur(self):
@@ -73,7 +68,6 @@ class Menu:
         saisie_en_cours = True
 
         while saisie_en_cours:
-            # On envoie le texte actuel à l'interface pour qu'elle l'affiche
             self.interface.afficher_saisie_nom(nom)
 
             for event in pygame.event.get():
@@ -83,17 +77,13 @@ class Menu:
                 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
-                        # On valide si le nom n'est pas vide
                         if len(nom) > 0:
                             saisie_en_cours = False
                     elif event.key == pygame.K_BACKSPACE:
-                        # On efface le dernier caractère
                         nom = nom[:-1]
                     else:
-                        # On ajoute le caractère s'il est valide et si le nom n'est pas trop long
                         if len(nom) < 15 and event.unicode.isprintable():
                             nom += event.unicode
-        
         return nom
 
     def charger_donnees(self, liste_brute):
@@ -104,16 +94,13 @@ class Menu:
         nb_total = len(liste_brute)
         
         for i, p in enumerate(liste_brute):
-            # 1. Mise à jour visuelle du chargement via l'interface
             self.interface.afficher_ecran_chargement(i + 1, nb_total)
             
-            # 2. Préparation des données du Pokémon
             nom_p = p["nom"]
             chemin_image = f"Assets/Images/{nom_p}.png"
             if not os.path.exists(chemin_image):
                 chemin_image = "Assets/Images/PokeDefaut.png"
 
-            # 3. Création de l'instance Pokemon
             nouveau_p = Pokemon(
                 nom=p["nom"],
                 pv=p["pv"],
@@ -125,9 +112,7 @@ class Menu:
                 evolution_nom=p["evolution"]
             )
             
-            # On demande à l'interface de préparer la surface de l'image
             nouveau_p.image_surface = self.interface.preparer_image(chemin_image)
-            
             self.mes_pokemons.append(nouveau_p)
 
     def choisir_pokemon(self):
@@ -138,10 +123,8 @@ class Menu:
         selectionne = False
 
         while not selectionne:
-            # On délègue l'affichage des 3 choix à l'interface
             self.interface.afficher_menu_selection(choix_possibles)
 
-            # On gère uniquement les entrées clavier ici
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -158,23 +141,99 @@ class Menu:
                         self.pokemon_joueur = choix_possibles[2]
                         selectionne = True
             
-            self.interface.rafraichir() # Si besoin de rafraichir spécifiquement ici
+            self.interface.rafraichir()
             
         print(f"Joueur a choisi : {self.pokemon_joueur.nom}")
         return self.pokemon_joueur
 
     def generer_adversaire(self):
-        """
-        Choisit un adversaire au hasard.
-        """
         self.pokemon_adversaire = random.choice(self.mes_pokemons)
         print(f"L'adversaire sera : {self.pokemon_adversaire.nom}")
         return self.pokemon_adversaire
 
     def lancer_formulaire_ajout(self):
         """
-        Méthode placeholder pour l'ajout de Pokémon via formulaire.
+        Gère la boucle d'interaction pour le formulaire de création.
         """
-        print("Lancement du formulaire d'ajout...")
-        # Ici tu appelleras la méthode de l'interface correspondante
-        # self.interface.afficher_formulaire_ajout()
+        nouvel_ajout = {
+            "nom": "",
+            "type": "",
+            "pv": "",
+            "attaque": "",
+            "defense": ""
+        }
+        
+        champ_actif = None 
+        en_creation = True
+
+        while en_creation:
+            # On envoie les données et l'état (quel champ est actif) à l'interface
+            self.interface.afficher_formulaire(nouvel_ajout, champ_actif)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+                # --- SOURIS ---
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    # L'interface doit nous dire sur quoi on a cliqué
+                    zone_cliquee = self.interface.detecter_clic_formulaire(event.pos)
+                    
+                    if zone_cliquee == "VALIDER":
+                        if all(valeur != "" for valeur in nouvel_ajout.values()):
+                            self.sauvegarder_nouveau_pokemon(nouvel_ajout)
+                            en_creation = False
+                    
+                    elif zone_cliquee == "RETOUR":
+                        en_creation = False
+                        
+                    else:
+                        champ_actif = zone_cliquee
+
+                # --- CLAVIER ---
+                if event.type == pygame.KEYDOWN and champ_actif is not None:
+                    if event.key == pygame.K_BACKSPACE:
+                        nouvel_ajout[champ_actif] = nouvel_ajout[champ_actif][:-1]
+                    
+                    elif event.key == pygame.K_TAB:
+                        pass 
+
+                    else:
+                        # Filtre chiffres pour les stats
+                        if champ_actif in ["pv", "attaque", "defense"]:
+                            if event.unicode.isdigit() and len(nouvel_ajout[champ_actif]) < 3:
+                                nouvel_ajout[champ_actif] += event.unicode
+                        # Filtre texte pour le reste
+                        else:
+                            if len(nouvel_ajout[champ_actif]) < 12:
+                                nouvel_ajout[champ_actif] += event.unicode
+
+    def sauvegarder_nouveau_pokemon(self, donnees):
+        """
+        Ecrit le nouveau pokemon dans le fichier JSON.
+        """
+        try:
+            pokemon_propre = {
+                "nom": donnees["nom"],
+                "types": [donnees["type"]],
+                "pv": int(donnees["pv"]),
+                "attaque": int(donnees["attaque"]),
+                "defense": int(donnees["defense"]),
+                "vitesse": 50,
+                "evolution": None,
+                "image": "Assets/Images/PokeDefaut.png" 
+            }
+
+            with open("pokedex.json", "r", encoding="utf-8") as f:
+                contenu_json = json.load(f)
+
+            contenu_json.append(pokemon_propre)
+
+            with open("pokedex.json", "w", encoding="utf-8") as f:
+                json.dump(contenu_json, f, indent=4, ensure_ascii=False)
+            
+            print(f"Succès : {donnees['nom']} a été ajouté au Pokédex !")
+
+        except Exception as e:
+            print(f"Erreur lors de la sauvegarde : {e}")
