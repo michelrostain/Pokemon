@@ -13,6 +13,7 @@ class Menu:
         self.mes_pokemons = [] # Liste des instances de Pokemon créées
         self.pokemon_joueur = None
         self.pokemon_adversaire = None
+            
 
     def charger_donnees(self, liste_brute):
         """
