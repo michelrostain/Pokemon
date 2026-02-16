@@ -1,7 +1,8 @@
 import random
 import pygame
 import os
-from mainclass import Pokemon # Import de ta classe Pokemon
+import sys # Pour quitter proprement
+from mainclass import Pokemon 
 
 class Menu:
     def __init__(self, interface):
@@ -13,7 +14,87 @@ class Menu:
         self.mes_pokemons = [] # Liste des instances de Pokemon créées
         self.pokemon_joueur = None
         self.pokemon_adversaire = None
+        self.nom_dresseur = "" # Variable pour stocker le nom du joueur
+
+    def lancer_jeu(self, liste_brute):
+        """
+        Cette méthode orchestre tout le démarrage du jeu :
+        Splash -> Accueil -> (Nom) -> Chargement -> Choix -> Combat
+        """
+        # 1. Ecran Splash Screen (3 secondes)
+        self.interface.afficher_splash_screen()
+
+        # 2. Ecran Accueil (Nouvelle / Reprendre / Ajouter)
+        # On passe la liste_brute car on en aura besoin plus tard
+        self.gerer_accueil(liste_brute)
+
+    def gerer_accueil(self, liste_brute):
+        """
+        Gère la décision prise dans le menu principal.
+        """
+        # On demande à l'interface d'afficher les choix et d'attendre une réponse
+        decision = self.interface.afficher_menu_accueil()
+
+        if decision == "NOUVEAU":
+            # 3. Ecran Saisie du Nom
+            self.nom_dresseur = self.saisir_nom_dresseur()
             
+            # 4. Ecran Chargement
+            # Ici, tu pourras ajouter la ligne pour vider le JSON si nécessaire
+            self.charger_donnees(liste_brute) 
+            
+            # 5. Ecran Choix du Pokemon
+            self.choisir_pokemon()
+            
+            # 6. Lancement du combat (Génération adversaire + Affichage)
+            self.generer_adversaire()
+            self.interface.afficher_combattants(self.pokemon_joueur, self.pokemon_adversaire)
+
+        elif decision == "REPRENDRE":
+            # Simulation du chargement du nom (à connecter à ton JSON de sauvegarde plus tard)
+            self.nom_dresseur = "Dresseur" 
+            
+            # On charge directement les données sans demander le nom
+            self.charger_donnees(liste_brute)
+            self.choisir_pokemon()
+            
+            self.generer_adversaire()
+            self.interface.afficher_combattants(self.pokemon_joueur, self.pokemon_adversaire)
+
+        elif decision == "AJOUTER":
+            # On lance ton formulaire spécial
+            self.lancer_formulaire_ajout()
+
+    def saisir_nom_dresseur(self):
+        """
+        Gère la boucle logique pour que l'utilisateur tape son nom.
+        """
+        nom = ""
+        saisie_en_cours = True
+
+        while saisie_en_cours:
+            # On envoie le texte actuel à l'interface pour qu'elle l'affiche
+            self.interface.afficher_saisie_nom(nom)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        # On valide si le nom n'est pas vide
+                        if len(nom) > 0:
+                            saisie_en_cours = False
+                    elif event.key == pygame.K_BACKSPACE:
+                        # On efface le dernier caractère
+                        nom = nom[:-1]
+                    else:
+                        # On ajoute le caractère s'il est valide et si le nom n'est pas trop long
+                        if len(nom) < 15 and event.unicode.isprintable():
+                            nom += event.unicode
+        
+        return nom
 
     def charger_donnees(self, liste_brute):
         """
@@ -64,7 +145,7 @@ class Menu:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                    exit()
+                    sys.exit()
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_1:
@@ -77,7 +158,7 @@ class Menu:
                         self.pokemon_joueur = choix_possibles[2]
                         selectionne = True
             
-            self.interface.rafraichir()
+            self.interface.rafraichir() # Si besoin de rafraichir spécifiquement ici
             
         print(f"Joueur a choisi : {self.pokemon_joueur.nom}")
         return self.pokemon_joueur
@@ -89,3 +170,11 @@ class Menu:
         self.pokemon_adversaire = random.choice(self.mes_pokemons)
         print(f"L'adversaire sera : {self.pokemon_adversaire.nom}")
         return self.pokemon_adversaire
+
+    def lancer_formulaire_ajout(self):
+        """
+        Méthode placeholder pour l'ajout de Pokémon via formulaire.
+        """
+        print("Lancement du formulaire d'ajout...")
+        # Ici tu appelleras la méthode de l'interface correspondante
+        # self.interface.afficher_formulaire_ajout()
