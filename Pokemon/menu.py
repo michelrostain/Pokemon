@@ -3,7 +3,7 @@ import pygame
 import os
 import sys
 import json
-from mainclass import Pokemon 
+from Pokemon.pokemon import Pokemon 
 
 class Menu:
     def __init__(self, interface):

@@ -1,4 +1,4 @@
-from mainclass import menu
+from Pokemon.pokemon import menu
 
 menu.ajouter_pokemon()
 

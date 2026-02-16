@@ -1,4 +1,4 @@
-from mainclass import *
+from Pokemon.pokemon import *
 from menu import *
 
 
