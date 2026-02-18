@@ -173,7 +173,7 @@ class Menu:
             
         else:
             # --- CAS DE DÉFAITE ---
-            self.interface.afficher_dialogue(f"Défaite... {self.pokemon_joueur.nom} s'enfuit de honte.")
+            self.interface.afficher_dialogue(f"Défaite... {self.pokemon_joueur.nom} retourne chez sa mère.")
             pygame.time.delay(2000)
 
             # 1. On le supprime de la sauvegarde (Le vrai juge de paix)
@@ -184,12 +184,12 @@ class Menu:
 
             if not survivants:
                 # C'est vide, c'est la fin
-                self.interface.afficher_dialogue("Tu n'as plus de Pokémon... !! GAME OVER !!")
+                self.interface.afficher_dialogue("Plus de Pokémon... !! GAME OVER !!")
                 pygame.time.delay(3000)
                 # Retour au menu principal (la boucle while du menu gèrera la suite)
                 return 
             else:
-                self.interface.afficher_dialogue("Attention, tes forces diminuent...")
+                self.interface.afficher_dialogue("Attention, & pokemon en moins !")
                 pygame.time.delay(2000)    
     def consulter_mon_pokedex(self):
         while True:

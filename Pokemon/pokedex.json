@@ -1,1 +1,41 @@
-[]
+[
+    {
+        "nom": "Kicklee",
+        "types": [
+            "Combat"
+        ],
+        "pv": 50,
+        "attaque": 120,
+        "defense": 53,
+        "vitesse": 87,
+        "classe": "Unique",
+        "evolution": null,
+        "xp": 100
+    },
+    {
+        "nom": "Dodrio",
+        "types": [
+            "Normal",
+            "Vol"
+        ],
+        "pv": 60,
+        "attaque": 110,
+        "defense": 70,
+        "vitesse": 110,
+        "classe": "Commun",
+        "evolution": null
+    },
+    {
+        "nom": "M. Mime",
+        "types": [
+            "Psy",
+            "Fée"
+        ],
+        "pv": 40,
+        "attaque": 45,
+        "defense": 65,
+        "vitesse": 90,
+        "classe": "Unique",
+        "evolution": null
+    }
+]
