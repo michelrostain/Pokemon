@@ -189,7 +189,7 @@ class Menu:
                 # Retour au menu principal (la boucle while du menu gèrera la suite)
                 return 
             else:
-                self.interface.afficher_dialogue("Attention, & pokemon en moins !")
+                self.interface.afficher_dialogue("Attention, 1 pokemon en moins !")
                 pygame.time.delay(2000)    
     def consulter_mon_pokedex(self):
         while True:

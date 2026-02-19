@@ -1,5 +1,3 @@
-import pygame
-
 class Pokemon:
     def __init__(self, nom, pv, attaque, defense, vitesse, image_url, type_principal, evolution_nom, xp_actuel=0):
         self.nom = nom
@@ -38,9 +36,9 @@ class Pokemon:
 
     # --- NOUVEAU : Méthodes pour l'évolution ---
     def gagner_xp(self, montant):
-        """Ajoute de l'XP et renvoie True SEULEMENT si une évolution est possible"""
+        # Ajoute de l'XP et renvoie True SEULEMENT si une évolution est possible
         self.point_exp += montant
-        print(f"DEBUG: {self.nom} a {self.point_exp}/{self.seuil_evolution} XP")
+        print(f"Evolution : {self.nom} a {self.point_exp}/{self.seuil_evolution} XP")
         
         # 1. Sécurité absolue : Si l'évolution est 'null' (None), on renvoie False direct.
         if self.evolution_nom is None:
@@ -53,10 +51,10 @@ class Pokemon:
         return False
 
     def evoluer(self, nouvelles_stats, nouvelle_image):
-        """Remplace les stats actuelles par celles de l'évolution"""
+        # Remplace les stats actuelles par celles de l'évolution
         self.nom = nouvelles_stats['nom']
         self.pv_max = nouvelles_stats['pv']
-        self.pv = self.pv_max  # Soin complet à l'évolution !
+        self.pv = self.pv_max  # Rajout des points de vie max à chaque évolution
         self.attaque = nouvelles_stats['attaque']
         self.defense = nouvelles_stats['defense']
         self.vitesse = nouvelles_stats.get('vitesse', 50)

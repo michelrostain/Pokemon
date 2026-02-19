@@ -231,7 +231,7 @@ class Interface:
 
             # --- 2. AFFICHAGE ---
             self.screen.fill(self.BLANC)
-            titre = "CHOISIS TON STARTER" if not mode_scroll_actif else "CHOISIS TON COMBATTANT"
+            titre = "CHOISIS TON POKEMON" if not mode_scroll_actif else "CHOISIS TON COMBATTANT"
             self.afficher_texte_centre(titre, 50, self.NOIR, self.font_titre)
 
             candidats_visibles = liste_candidats[index_depart : index_depart + 3]
@@ -327,7 +327,7 @@ class Interface:
             self.afficher_texte_centre("MON POKÉDEX ACTUEL", 40, self.BLANC, self.font_titre)
             
             if not liste_pokemons:
-                self.afficher_texte_centre("Votre Pokédex est vide.", 300, self.GRIS_CLAIR, self.font_texte)
+                self.afficher_texte_centre("Le Pokédex est vide.", 300, self.GRIS_CLAIR, self.font_texte)
             else:
                 START_Y = 100; ROW_H = 80; MARGIN = 100
                 for i in range(nb_visibles):
