@@ -1,1 +1,27 @@
-[]
+[
+    {
+        "nom": "Magicarpe",
+        "types": [
+            "Eau"
+        ],
+        "pv": 20,
+        "attaque": 10,
+        "defense": 55,
+        "vitesse": 80,
+        "classe": "Commun",
+        "evolution": "L\u00e9viator"
+    },
+    {
+        "nom": "Doduo",
+        "types": [
+            "Normal",
+            "Vol"
+        ],
+        "pv": 35,
+        "attaque": 85,
+        "defense": 45,
+        "vitesse": 75,
+        "classe": "Commun",
+        "evolution": "Dodrio"
+    }
+]

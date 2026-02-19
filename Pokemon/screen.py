@@ -1,6 +1,7 @@
 import pygame
 import os
 import requests
+import sys
 
 class Interface:
     def __init__(self):
@@ -157,6 +158,11 @@ class Interface:
 
     def afficher_menu_accueil(self):
         while True:
+            # Gestion des bugs d'affichage lorsque l'on quitte le programme
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()  # Ferme proprement le moteur graphique
+                    sys.exit()
             self.screen.fill(self.NOIR)
             self.afficher_texte_centre("MENU PRINCIPAL", 80, self.BLANC, self.font_titre)
             self.afficher_texte_centre("(Tapez A, B, ou C)", 120, self.BLANC, self.font_texte)
@@ -175,7 +181,7 @@ class Interface:
             pygame.display.flip()
 
             for event in pygame.event.get():
-                if event.type == pygame.QUIT: pygame.quit(); exit()
+                if event.type == pygame.QUIT: pygame.quit(); sys.exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_a: return "NOUVEAU"
                     if event.key == pygame.K_b: return "REPRENDRE"
@@ -201,7 +207,7 @@ class Interface:
             # --- 1. GESTION DES EVENEMENTS ---
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit(); exit()
+                    pygame.quit(); sys.exit()
                 
                 # NAVIGATION CLAVIER
                 if event.type == pygame.KEYDOWN and mode_scroll_actif:
@@ -353,7 +359,7 @@ class Interface:
             pygame.display.flip()
 
             for event in pygame.event.get():
-                if event.type == pygame.QUIT: pygame.quit(); exit()
+                if event.type == pygame.QUIT: pygame.quit(); sys.exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE: return "RETOUR"
                     if event.key == pygame.K_a: return "ALLER_AJOUT"

@@ -1,7 +1,7 @@
 import json
 import pygame
 import time
-import random  # Nécessaire pour gérer le taux de réussite des attaques
+import random
 
 class Combat:
     def __init__(self, interface, joueur, adversaire):
