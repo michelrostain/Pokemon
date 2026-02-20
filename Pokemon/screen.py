@@ -207,12 +207,13 @@ class Interface:
         running = True
         index_depart = 0 
         clock = pygame.time.Clock()
-        temps = pygame.time.get_ticks()
         
         # Mode scroll actif seulement si plus de 3 pokémons
         mode_scroll_actif = len(liste_candidats) > 3
         
         while running:
+            temps = pygame.time.get_ticks()
+
             # --- 1. GESTION DES EVENEMENTS ---
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -304,7 +305,7 @@ class Interface:
                 couleur_clignotante = self.BLANC    
 
             instruction = "Flèches GAUCHE/DROITE pour défiler - CLIC pour choisir"
-            texte_surface = self.font_petit.render(instruction, True, couleur_clignotante)  
+            texte_surface = self.font_texte.render(instruction, True, couleur_clignotante)  
 
             rect = texte_surface.get_rect(center=(self.WIDTH // 2, self.HEIGHT - 30))
             self.screen.blit(texte_surface, rect)
