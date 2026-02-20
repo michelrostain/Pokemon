@@ -143,8 +143,7 @@ class Menu:
             self.gestion_pokedex.mettre_a_jour_progression(self.pokemon_joueur)
             # ---------------------------------------------------
             
-            # 3. Évolution
-            # 4. Évolution
+            # Évolution
             if doit_evoluer:
                 nom_evo = self.pokemon_joueur.evolution_nom
                 stats_evo = next((p for p in self.catalogue_global if p["nom"] == nom_evo), None)

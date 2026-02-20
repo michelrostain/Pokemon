@@ -88,6 +88,16 @@ class Interface:
             "Mewtwo": 150, "Mew": 151
         }
 
+    def afficher_image_splash_screen(self):
+        surface=pygame.image.load("Assets/Images/Background/ImageAccueil.png")
+        # image_fond=pygame.transform.scale(surface, (self.WIDTH, self.HEIGHT))
+        self.screen.blit(surface, (0, 0))
+
+    def afficher_image_combat(self):
+        surface=pygame.image.load("Assets/Images/Background/ImageArene.png")
+        # image_fond=pygame.transform.scale(surface, (self.WIDTH, self.HEIGHT))
+        self.screen.blit(surface, (0, 0))
+
     def afficher_texte_centre(self, texte, y, color, font):
         surface = font.render(texte, True, color)
         rect = surface.get_rect(center=(self.WIDTH // 2, y))
@@ -150,11 +160,9 @@ class Interface:
     # =========================================================
 
     def afficher_splash_screen(self):
-        self.screen.fill(self.BLEU_NUIT)
-        self.afficher_texte_centre("POKÉMON PYTHON", self.HEIGHT // 2 - 50, self.BLANC, self.font_titre)
-        self.afficher_texte_centre("Chargement...", self.HEIGHT // 2 + 20, self.GRIS_CLAIR, self.font_petit)
+        self.afficher_image_splash_screen()
         pygame.display.flip()
-        pygame.time.delay(1500)
+        pygame.time.delay(2000)
 
     def afficher_menu_accueil(self):
         while True:
@@ -163,9 +171,9 @@ class Interface:
                 if event.type == pygame.QUIT:
                     pygame.quit()  # Ferme proprement le moteur graphique
                     sys.exit()
-            self.screen.fill(self.NOIR)
-            self.afficher_texte_centre("MENU PRINCIPAL", 80, self.BLANC, self.font_titre)
-            self.afficher_texte_centre("(Tapez A, B, ou C)", 120, self.BLANC, self.font_texte)
+            self.afficher_image_splash_screen()
+            # self.afficher_texte_centre("MENU PRINCIPAL", 80, self.BLANC, self.font_titre)
+            self.afficher_texte_centre("(Tapez A, B, ou C)", 500, self.NOIR, self.font_titre)
             
             options = [
                 ("A - NOUVELLE PARTIE", 200),
@@ -236,9 +244,9 @@ class Interface:
                             return liste_candidats[index_depart + i]
 
             # --- 2. AFFICHAGE ---
-            self.screen.fill(self.BLANC)
+            self.afficher_image_splash_screen()
             titre = "CHOISIS TON POKEMON" if not mode_scroll_actif else "CHOISIS TON COMBATTANT"
-            self.afficher_texte_centre(titre, 50, self.NOIR, self.font_titre)
+            self.afficher_texte_centre(titre, 50, self.BLANC, self.font_titre)
 
             candidats_visibles = liste_candidats[index_depart : index_depart + 3]
             positions_x = [50, 300, 550]
@@ -249,7 +257,7 @@ class Interface:
                 
                 # --- NOUVELLE LOGIQUE DE COULEUR ---
                 # Par défaut c'est gris
-                couleur_fond = self.GRIS_CLAIR
+                couleur_fond = self.BLANC
                 
                 # Si le Pokémon a évolué (supposons seuil 100 XP pour niveau 2, 200 pour niveau 3)
                 # Tu peux ajuster ces valeurs selon ton game design dans pokemon.py
@@ -288,14 +296,14 @@ class Interface:
                 msg = f"Affichage {index_depart+1}-{min(index_depart+3, len(liste_candidats))} sur {len(liste_candidats)}"
                 self.afficher_texte_centre(msg, 100, self.GRIS_FONCE, self.font_petit)
 
-            self.afficher_texte_centre("Flèches GAUCHE/DROITE pour défiler - CLIC pour choisir", 500, self.BLEU_NUIT, self.font_petit)
+            self.afficher_texte_centre("Flèches GAUCHE/DROITE pour défiler - CLIC pour choisir", 500, self.BLEU_NUIT, self.font_texte)
 
             pygame.display.flip()
             clock.tick(60)
             
             # --- 4. GESTION ÉVÉNEMENTS ---
     def afficher_combattants(self, p_joueur, p_adversaire):
-        self.screen.fill(self.BLANC)
+        self.afficher_image_combat()
         
         # Joueur
         if p_joueur.image_surface:
