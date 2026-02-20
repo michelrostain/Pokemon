@@ -207,6 +207,7 @@ class Interface:
         running = True
         index_depart = 0 
         clock = pygame.time.Clock()
+        temps = pygame.time.get_ticks()
         
         # Mode scroll actif seulement si plus de 3 pokémons
         mode_scroll_actif = len(liste_candidats) > 3
@@ -261,9 +262,9 @@ class Interface:
                 
                 # Si le Pokémon a évolué (supposons seuil 100 XP pour niveau 2, 200 pour niveau 3)
                 # Tu peux ajuster ces valeurs selon ton game design dans pokemon.py
-                if p.point_exp >= 200:
+                if p.point_exp >= 200 and p.evolution_nom is not None:
                     couleur_fond = self.OR    # Niveau 3 (Légendaire / Evolved 2)
-                elif p.point_exp >= 100:
+                elif p.point_exp >= 100 and p.evolution_nom is not None:
                     couleur_fond = self.CYAN  # Niveau 2 (Evolved 1)
                 
                 # Si KO, on peut garder le gris ou mettre rouge, mais le cadre est déjà rouge
@@ -295,8 +296,18 @@ class Interface:
                 
                 msg = f"Affichage {index_depart+1}-{min(index_depart+3, len(liste_candidats))} sur {len(liste_candidats)}"
                 self.afficher_texte_centre(msg, 100, self.GRIS_FONCE, self.font_petit)
+            
+            # Le texte clignote :
+            if (temps // 500) % 2 == 0:
+                couleur_clignotante = self.JAUNE
+            else:
+                couleur_clignotante = self.BLANC    
 
-            self.afficher_texte_centre("Flèches GAUCHE/DROITE pour défiler - CLIC pour choisir", 500, self.BLEU_NUIT, self.font_texte)
+            instruction = "Flèches GAUCHE/DROITE pour défiler - CLIC pour choisir"
+            texte_surface = self.font_petit.render(instruction, True, couleur_clignotante)  
+
+            rect = texte_surface.get_rect(center=(self.WIDTH // 2, self.HEIGHT - 30))
+            self.screen.blit(texte_surface, rect)
 
             pygame.display.flip()
             clock.tick(60)
