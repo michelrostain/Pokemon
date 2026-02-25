@@ -1,0 +1,53 @@
+[
+    {
+        "nom": "Tauros",
+        "types": [
+            "Normal"
+        ],
+        "pv": 75,
+        "attaque": 100,
+        "defense": 95,
+        "vitesse": 110,
+        "classe": "Unique",
+        "evolution": null,
+        "xp": 150
+    },
+    {
+        "nom": "Roucool",
+        "types": [
+            "Normal",
+            "Vol"
+        ],
+        "pv": 40,
+        "attaque": 45,
+        "defense": 40,
+        "vitesse": 56,
+        "classe": "Commun",
+        "evolution": "Roucoups"
+    },
+    {
+        "nom": "Smogogo",
+        "types": [
+            "Poison"
+        ],
+        "pv": 65,
+        "attaque": 90,
+        "defense": 120,
+        "vitesse": 60,
+        "classe": "Commun",
+        "evolution": null
+    },
+    {
+        "nom": "Artikodin",
+        "types": [
+            "Glace",
+            "Vol"
+        ],
+        "pv": 90,
+        "attaque": 85,
+        "defense": 100,
+        "vitesse": 85,
+        "classe": "Légendaire",
+        "evolution": null
+    }
+]
