@@ -27,8 +27,10 @@ class Combat:
         return max(1, degats), coeff
 
     def lancer_combat(self):
-        tour_joueur = True
         
+        pygame.mixer.music.fadeout(2000)
+
+        tour_joueur = True
         while not self.joueur.est_ko() and not self.adversaire.est_ko():
             if tour_joueur:
                 # NOUVEAU : Affichage des types d'attaque !
@@ -114,5 +116,8 @@ class Combat:
                 
                 tour_joueur = True
 
-        if self.adversaire.est_ko(): return "VICTOIRE"
+        if self.adversaire.est_ko(): 
+            pygame.mixer.music.play(-1)
+            return "VICTOIRE"
+        pygame.mixer.music.play(-1)
         return "DEFAITE"

@@ -1,4 +1,5 @@
 #Module principal pour lancer le jeu Pokémon.
+import pygame
 import json
 from menu import Menu
 from screen import Interface
@@ -13,6 +14,10 @@ def main():
         return
 
     gui = Interface()
+
+    pygame.mixer.music.load("Assets/Sounds/generique.mp3")
+    pygame.mixer.music.play(-1)  # -1 = boucle infinie
+
     app = Menu(gui)
     app.lancer_jeu(data)
 
