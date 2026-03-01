@@ -127,7 +127,7 @@ class Combat:
                 tour_joueur = True
 
         if self.adversaire.est_ko(): 
-            pygame.mixer.music.fadeout()
+            pygame.mixer.music.fadeout(1000)
             son_victoire = pygame.mixer.Sound("Assets/Sounds/gagne.mp3")
             son_victoire.play()
             pygame.time.delay(int(son_victoire.get_length() * 1000))  # attend la fin du son
@@ -138,7 +138,7 @@ class Combat:
         pygame.mixer.music.fadeout(1000)
         son_defaite = pygame.mixer.Sound("Assets/Sounds/perdu.mp3")
         son_defaite.play()
-        pygame.time.delay(int(son_defaite.get_length() * 1000))  # attend la fin du son
+        pygame.time.delay(int(son_defaite.get_length() * 1000))
         pygame.mixer.music.load("Assets/Sounds/generique.mp3")
         pygame.mixer.music.set_volume(0.4)
         pygame.mixer.music.play(-1)        # pygame.mixer.music.play(-1)

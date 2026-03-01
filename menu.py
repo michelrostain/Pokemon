@@ -144,7 +144,6 @@ class Menu:
 
             if not survivants:
                 self.interface.afficher_dialogue("Plus de Pokémon... !! GAME OVER !!")
-                pygame.time.delay(3000)
                 return 
             else:
                 self.interface.afficher_dialogue("Attention, 1 pokemon en moins !")

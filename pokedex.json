@@ -1,14 +1,14 @@
 [
     {
-        "nom": "Carapuce",
+        "nom": "Salamèche",
         "types": [
-            "Eau"
+            "Feu"
         ],
-        "pv": 44,
-        "attaque": 48,
-        "defense": 65,
-        "vitesse": 43,
+        "pv": 39,
+        "attaque": 52,
+        "defense": 43,
+        "vitesse": 65,
         "classe": "Starter",
-        "evolution": "Carabaffe"
+        "evolution": "Reptincel"
     }
 ]
