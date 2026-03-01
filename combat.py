@@ -80,8 +80,9 @@ class Combat:
                     
                     dmg, c = self.calculer_degats(self.joueur, self.adversaire, puissance_choisie)
                     self.adversaire.subir_degats(dmg)
-                    pygame.mixer.Sound("Assets/Sounds/attaque_reussie.mp3").play()
-                    
+                    son_attaque=pygame.mixer.Sound("Assets/Sounds/degats.mp3")
+                    son_attaque.play()
+                    pygame.time.delay(int(son_attaque.get_length() * 1000))  # attend la fin du son
                     msg = f"Ça inflige {dmg} dégâts !"
                     if c > 1.5: msg += " (C'est super efficace !)"
                     elif c < 0.8: msg += " (Ce n'est pas très efficace...)"
@@ -123,7 +124,7 @@ class Combat:
                 tour_joueur = True
 
         if self.adversaire.est_ko(): 
-            pygame.mixer.music.stop()
+            pygame.mixer.music.fadeout()
             son_victoire = pygame.mixer.Sound("Assets/Sounds/gagne.mp3")
             son_victoire.play()
             pygame.time.delay(int(son_victoire.get_length() * 1000))  # attend la fin du son
@@ -131,7 +132,7 @@ class Combat:
             pygame.mixer.music.set_volume(0.4)
             pygame.mixer.music.play(-1)
             return "VICTOIRE"
-        pygame.mixer.music.stop()
+        pygame.mixer.music.fadeout(1000)
         son_defaite = pygame.mixer.Sound("Assets/Sounds/perdu.mp3")
         son_defaite.play()
         pygame.time.delay(int(son_defaite.get_length() * 1000))  # attend la fin du son

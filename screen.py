@@ -435,7 +435,6 @@ class Interface:
         pygame.draw.rect(self.screen, self.BLANC, (x, y, 200, 15), 2, border_radius=5)
 
     def animer_degats(self):
-        self.jouer_son("degats.wav") 
         for _ in range(2):
             self.screen.fill((150, 0, 0), special_flags=pygame.BLEND_RGB_ADD)
             pygame.display.flip()
