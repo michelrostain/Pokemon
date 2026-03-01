@@ -1,14 +1,1 @@
-[
-    {
-        "nom": "Carapuce",
-        "types": [
-            "Eau"
-        ],
-        "pv": 44,
-        "attaque": 48,
-        "defense": 65,
-        "vitesse": 43,
-        "classe": "Starter",
-        "evolution": "Carabaffe"
-    }
-]
+[]

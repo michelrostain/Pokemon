@@ -29,6 +29,10 @@ class Combat:
     def lancer_combat(self):
         
         pygame.mixer.music.fadeout(2000)
+        pygame.mixer.music.load("Assets/Sounds/combat.mp3")
+        pygame.mixer.music.set_volume(0.4)
+        pygame.mixer.music.play(-1)
+
 
         tour_joueur = True
         while not self.joueur.est_ko() and not self.adversaire.est_ko():
@@ -63,6 +67,7 @@ class Combat:
                 chance = random.randint(1, 10)
                 
                 if chance == 1:
+                    pygame.mixer.Sound("Assets/Sounds/attaque_ratee.mp3").play()
                     self.interface.afficher_combattants(self.joueur, self.adversaire)
                     self.interface.afficher_dialogue(f"Mince ! {self.joueur.nom} a raté {nom_attaque_choisie} !")
                     pygame.time.delay(1500)
@@ -75,6 +80,7 @@ class Combat:
                     
                     dmg, c = self.calculer_degats(self.joueur, self.adversaire, puissance_choisie)
                     self.adversaire.subir_degats(dmg)
+                    pygame.mixer.Sound("Assets/Sounds/attaque_reussie.mp3").play()
                     
                     msg = f"Ça inflige {dmg} dégâts !"
                     if c > 1.5: msg += " (C'est super efficace !)"
@@ -117,7 +123,19 @@ class Combat:
                 tour_joueur = True
 
         if self.adversaire.est_ko(): 
+            pygame.mixer.music.stop()
+            son_victoire = pygame.mixer.Sound("Assets/Sounds/gagne.mp3")
+            son_victoire.play()
+            pygame.time.delay(int(son_victoire.get_length() * 1000))  # attend la fin du son
+            pygame.mixer.music.load("Assets/Sounds/generique.mp3")
+            pygame.mixer.music.set_volume(0.4)
             pygame.mixer.music.play(-1)
             return "VICTOIRE"
-        pygame.mixer.music.play(-1)
+        pygame.mixer.music.stop()
+        son_defaite = pygame.mixer.Sound("Assets/Sounds/perdu.mp3")
+        son_defaite.play()
+        pygame.time.delay(int(son_defaite.get_length() * 1000))  # attend la fin du son
+        pygame.mixer.music.load("Assets/Sounds/generique.mp3")
+        pygame.mixer.music.set_volume(0.4)
+        pygame.mixer.music.play(-1)        # pygame.mixer.music.play(-1)
         return "DEFAITE"

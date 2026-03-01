@@ -1,6 +1,6 @@
 import random
 import pygame
-import sys
+
 from pokemon import Pokemon
 from pokedex import Pokedex
 from combat import Combat
