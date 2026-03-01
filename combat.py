@@ -64,7 +64,10 @@ class Combat:
                 nom_attaque_choisie = choix_attaque[0]
                 puissance_choisie = choix_attaque[1]
 
-                chance = random.randint(1, 10)
+                if puissance_choisie ==1.3:
+                    chance = random.randint(1, 4)  # 25% de chance de rater
+                else:
+                    chance = random.randint(1, 10)  # 10% de chance de rater
                 
                 if chance == 1:
                     pygame.mixer.Sound("Assets/Sounds/attaque_ratee.mp3").play()
