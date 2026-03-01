@@ -117,7 +117,6 @@ class Menu:
             self.gestion_pokedex.enregistrer_pokemon(self.pokemon_adversaire.nom)
             
             doit_evoluer = self.pokemon_joueur.gagner_xp(50)
-            self.gestion_pokedex.mettre_a_jour_progression(self.pokemon_joueur)
             
             if doit_evoluer:
                 nom_evo = self.pokemon_joueur.evolution_nom
@@ -135,7 +134,9 @@ class Menu:
                     self.pokemon_joueur.evoluer(stats_evo, nouvelle_img)
                     self.gestion_pokedex.supprimer_pokemon(ancien_nom)
                     self.gestion_pokedex.mettre_a_jour_progression(self.pokemon_joueur)
-        
+            else:
+                self.gestion_pokedex.mettre_a_jour_progression(self.pokemon_joueur)
+
         else:
             self.interface.afficher_ecran_fin_combat("DEFAITE", self.pokemon_joueur, self.pokemon_adversaire)
             self.gestion_pokedex.supprimer_pokemon(self.pokemon_joueur.nom)

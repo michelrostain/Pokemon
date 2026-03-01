@@ -69,8 +69,12 @@ class Pokedex:
         trouve = False
         for p in data:
             if p['nom'] == pokemon_objet.nom:
-                # On met à jour l'XP dans le fichier JSON
+                # On met à jour l'XP, les points de vie, et le reste des stats dans le fichier JSON
                 p['xp'] = pokemon_objet.point_exp
+                p['pv'] = pokemon_objet.pv_max      # ajout
+                p['attaque'] = pokemon_objet.attaque # ajout
+                p['defense'] = pokemon_objet.defense # ajout
+                p['vitesse'] = pokemon_objet.vitesse
                 trouve = True
                 break
         
