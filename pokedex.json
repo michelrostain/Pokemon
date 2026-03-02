@@ -1,14 +1,28 @@
 [
     {
-        "nom": "Salamèche",
+        "nom": "Doduo",
         "types": [
-            "Feu"
+            "Normal",
+            "Vol"
         ],
-        "pv": 39,
-        "attaque": 52,
-        "defense": 43,
-        "vitesse": 65,
-        "classe": "Starter",
-        "evolution": "Reptincel"
+        "pv": 35,
+        "attaque": 85,
+        "defense": 45,
+        "vitesse": 75,
+        "classe": "Commun",
+        "evolution": "Dodrio",
+        "xp": 50
+    },
+    {
+        "nom": "Colossinge",
+        "types": [
+            "Combat"
+        ],
+        "pv": 65,
+        "attaque": 105,
+        "defense": 60,
+        "vitesse": 95,
+        "classe": "Commun",
+        "evolution": "Courrousinge"
     }
 ]
